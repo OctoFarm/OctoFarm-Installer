@@ -1,0 +1,5 @@
+{
+  "cleanup_downloaded_archive": true,
+  "decompress_overwrite": true,
+  "clean_old_versions": true
+}

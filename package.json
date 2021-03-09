@@ -1,0 +1,27 @@
+{
+    "name": "octofarm-cli",
+    "version": "1.0.0",
+    "description": "OctoFarm command-line helper interface.",
+    "main": "octofarm-cli.ts",
+    "dependencies": {
+        "axios": "^0.21.1",
+        "decompress": "^4.2.1",
+        "octonode": "^0.10.0",
+        "progress": "^2.0.3",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.2.3",
+        "yargs": "^16.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^14.14.32",
+        "@types/yargs": "^16.0.0",
+        "json-to-typescript": "^1.0.1"
+    },
+    "scripts": {
+        "start": "npx ts-node octofarm-cli.ts",
+        "start2": "npx ts-node tools/grd-index.ts --",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "davidzwa",
+    "license": "ISC"
+}
