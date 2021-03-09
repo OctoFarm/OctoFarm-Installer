@@ -18,7 +18,7 @@
         "json-to-typescript": "^1.0.1"
     },
     "scripts": {
-        "start": "npx ts-node octofarm-cli.ts",
+        "start": "ts-node octofarm-cli.ts",
         "start2": "npx ts-node tools/grd-index.ts --",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
