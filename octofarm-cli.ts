@@ -2,7 +2,7 @@ import * as stream from 'stream';
 import {promisify} from 'util';
 import axios from "axios";
 import * as fs from "fs";
-import {createWriteStream} from "fs";
+import {createWriteStream, readdirSync} from "fs";
 import path from "path";
 import {ReleasesDtoSet} from "./schemas/releases";
 import {createFolderIfNotExists, patchPackageJsonBunyan} from "./utils/file.utils";
@@ -73,7 +73,7 @@ createFolderIfNotExists(releasesDir);
 var clientReleases = github.client().repo(`${githubOrg}/${productRepo}`);
 clientReleases.releases(async function (err, s: ReleasesDtoSet, b, h) {
     const latestRelease = s[0];
-    const latestReleaseTarUrl = latestRelease.zipball_url;
+    const latestReleaseTarUrl = latestRelease.tarball_url;
     const latestReleaseTag = latestRelease.tag_name;
 
     const archivePath = await downloadFile(latestReleaseTarUrl, releasesDir, latestReleaseTag);
@@ -96,11 +96,20 @@ clientReleases.releases(async function (err, s: ReleasesDtoSet, b, h) {
         fs.rmSync(archivePath);
     }
 
-    if (config.clean_old_versions === true) {
-
-    }
-
     patchPackageJsonBunyan(latestReleaseTag, path.join(targetFolder, 'package.json'));
     execSync("npm ci --production", {cwd: targetFolder, stdio: "inherit"});
+
+    if (config.clean_old_versions === true) {
+        const otherReleaseDirs = readdirSync(releasesDir, {withFileTypes: true})
+            .filter(dirent => dirent.isDirectory() && !dirent.name.includes(latestReleaseTag))
+            .map(dirent => path.join(releasesDir, dirent.name));
+        console.debug(otherReleaseDirs);
+        console.warn(`Found ${otherReleaseDirs.length} releases which will be removed.`);
+        otherReleaseDirs.forEach(dir => {
+            console.warn(`\t- Deleting ${dir} OctoFarm releases.`);
+            fs.rmdirSync(dir, {recursive: true});
+        });
+    }
+
     console.warn('OctoFarm-cli is done. \n\tHappy printing and may the toilet roll watch over you.');
 });
