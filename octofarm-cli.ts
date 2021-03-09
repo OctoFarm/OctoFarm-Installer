@@ -103,7 +103,6 @@ clientReleases.releases(async function (err, s: ReleasesDtoSet, b, h) {
         const otherReleaseDirs = readdirSync(releasesDir, {withFileTypes: true})
             .filter(dirent => dirent.isDirectory() && !dirent.name.includes(latestReleaseTag))
             .map(dirent => path.join(releasesDir, dirent.name));
-        console.debug(otherReleaseDirs);
         console.warn(`Found ${otherReleaseDirs.length} releases which will be removed.`);
         otherReleaseDirs.forEach(dir => {
             console.warn(`\t- Deleting ${dir} OctoFarm releases.`);

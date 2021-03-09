@@ -23,7 +23,6 @@ function removeBunyanDep(file) {
 
     const updatedData = dataArray.join('\n');
     fs.writeFileSync(file, updatedData);
-    console.log('Successfully removed bunyan dependency.');
 }
 
 export function patchPackageJsonBunyan(tag: string, packageJsonFile: string) {
