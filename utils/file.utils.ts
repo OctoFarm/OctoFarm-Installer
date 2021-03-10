@@ -8,7 +8,7 @@ export function createFolderIfNotExists(outputFolder: string) {
     }
 }
 
-export function stringBufferGrepFirst(stringBuffer: string, grepString: string) {
+export function stringGrepFirstLine(stringBuffer: string, grepString: string) {
     let dataArray = stringBuffer.split('\n'); // convert file data in an array
 
     let lastIndex = -1; // let say, we have not found the keyword

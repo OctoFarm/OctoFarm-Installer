@@ -5,7 +5,7 @@ import * as fs from "fs";
 import {createWriteStream, readdirSync} from "fs";
 import path from "path";
 import {ReleasesDto, ReleasesDtoSet} from "./schemas/releases";
-import {createFolderIfNotExists, patchPackageJsonBunyan, stringBufferGrepFirst} from "./utils/file.utils";
+import {createFolderIfNotExists, patchPackageJsonBunyan, stringGrepFirstLine} from "./utils/file.utils";
 import {getMergedValidatedConfig} from "./utils/parse-config.util";
 import {execSync} from "child_process";
 import {Config} from "./schemas/config.model";
@@ -26,7 +26,6 @@ export async function downloadFile(fileUrl: string, basePath, releaseTag: string
         let contentLength = response.headers['content-length'];
         let progressBar = null;
         if (!contentLength) {
-            console.log(response);
             console.error("content-length was undefined, guessing download size.");
             contentLength = 17320068;
         }
@@ -72,7 +71,7 @@ function getPm2VersionIfInstalled(): string {
         console.log("Checking pm2 installation");
         const commandOutput = execSync("npm list --depth=0 -g pm2", {encoding: "utf8"});
         console.log("Npm list command output:'" + JSON.stringify(commandOutput) + "'");
-        if (!!stringBufferGrepFirst(commandOutput, "pm2")) {
+        if (!!stringGrepFirstLine(commandOutput, "pm2")) {
             return commandOutput;
         } else {
             return null;
@@ -113,9 +112,19 @@ async function getLatestReleaseInfo(config: Config): Promise<ReleasesDto> {
     });
 }
 
-function getCurrentInstalledRelease(config: Config, release_tag_name): boolean {
+function getCurrentInstalledRelease(config: Config, release_tag_name): string {
+    const releaseFolder = getReleaseFolder(config.release_folder, release_tag_name);
+    if (!fs.existsSync(releaseFolder)) {
+        return null;
+    }
 
-    return true;
+    const packageJsonFilePath = path.join('./', releaseFolder, 'package.json');
+    if (!fs.existsSync(packageJsonFilePath)) {
+        throw Error("Folder with latest release name was found, but no package.json was present in it. Are you sure everything is OK here? Please check.");
+    } else {
+        const jsonFile = JSON.parse(fs.readFileSync(packageJsonFilePath, {encoding: "utf8"}));
+        return jsonFile.version;
+    }
 }
 
 async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
@@ -158,7 +167,6 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
     }
 }
 
-
 (async () => {
     const config = await getMergedValidatedConfig();
     createFolderIfNotExists(config.release_folder);
@@ -169,8 +177,8 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
     }
     const latestRelease = await getLatestReleaseInfo(config);
     const installedLatestRelease = getCurrentInstalledRelease(config, latestRelease.tag_name);
-    if (installedLatestRelease === false) {
-        console.warn("There is a new release available for OctoFarm - we'll install this version now:", latestRelease.tag_name)
+    if (!installedLatestRelease) {
+        console.warn("There is a new release available for OctoFarm - we'll install it now: ", latestRelease.tag_name)
         await downloadRelease(config, latestRelease);
     } else {
         console.warn(`The latest OctoFarm (${latestRelease.tag_name}) is installed, so you're good to go!`);
@@ -178,4 +186,6 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
 
 
     console.warn('OctoFarm-Installer has completed. May the toilet roll watch over you.');
-})();
+})().catch(err => {
+    console.error("An error occurred whilst running OctoFarm-Installer:\n", err);
+});
