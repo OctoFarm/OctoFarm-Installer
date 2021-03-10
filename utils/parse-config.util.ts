@@ -1,6 +1,10 @@
-import * as JsonConfig from "../octofarm-cli.config.json";
-import {Config} from "../schemas/config";
+import * as JsonConfig from "../octofarm-installer.config.json";
+import {Config} from "../schemas/config.model";
+import {validateOrReject, validateSync} from "class-validator";
 
-export function getMergedValidatedConfig(yargs?: any[]) {
-    return JsonConfig as Config;
+export async function getMergedValidatedConfig(yargs?: any[]) {
+    const newConfig = new Config(JsonConfig);
+    await validateOrReject(newConfig, {forbidUnknownValues: true, stopAtFirstError: false});
+
+    return newConfig;
 }

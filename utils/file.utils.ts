@@ -8,13 +8,30 @@ export function createFolderIfNotExists(outputFolder: string) {
     }
 }
 
+export function stringBufferGrepFirst(stringBuffer: string, grepString: string) {
+    let dataArray = stringBuffer.split('\n'); // convert file data in an array
+
+    let lastIndex = -1; // let say, we have not found the keyword
+    for (let index = 0; index < stringBuffer.length; index++) {
+        if (dataArray[index].includes(grepString)) { // check if a line contains the keyword
+            lastIndex = index; // found a line includes a 'user1' keyword
+            break;
+        }
+    }
+
+    if (lastIndex === -1) {
+        return null;
+    }
+    return dataArray[lastIndex];
+}
+
 function removeBunyanDep(file) {
     const buffer = fs.readFileSync(file, {encoding: 'utf-8'});
     let dataArray = buffer.split('\n'); // convert file data in an array
     const searchKeyword = 'bunyan'; // we are looking for a line, contains, key word 'user1' in the file
     let lastIndex = -1; // let say, we have not found the keyword
     for (let index = 0; index < dataArray.length; index++) {
-        if (dataArray[index].includes(searchKeyword)) { // check if a line contains the 'user1' keyword
+        if (dataArray[index].includes(searchKeyword)) { // check if a line contains the keyword
             lastIndex = index; // found a line includes a 'user1' keyword
             break;
         }
