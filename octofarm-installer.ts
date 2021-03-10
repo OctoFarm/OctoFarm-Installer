@@ -117,7 +117,7 @@ async function getLatestReleaseInfo(config: Config): Promise<ReleasesDto> {
     });
 }
 
-function getCurrentInstalledRelease(config: Config, release_tag_name): string {
+function getCurrentInstalledRelease(config: Config, release_tag_name): boolean {
     const releaseFolder = getReleaseFolder(config.release_folder, release_tag_name);
     if (!fs.existsSync(releaseFolder)) {
         return null;
@@ -128,11 +128,11 @@ function getCurrentInstalledRelease(config: Config, release_tag_name): string {
         throw Error("Folder with latest release name was found, but no package.json was present in it. Are you sure everything is OK here? Please check.");
     } else {
         const jsonFile = JSON.parse(fs.readFileSync(packageJsonFilePath, {encoding: "utf8"}));
-        return jsonFile.version;
+        return jsonFile.version === release_tag_name;
     }
 }
 
-async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
+async function downloadAndInstallRelease(config: Config, releaseToDownload: ReleasesDto) {
     const latestReleaseTarUrl = releaseToDownload.tarball_url;
     const latestReleaseTag = releaseToDownload.tag_name;
     const releasesDir = config.release_folder;
@@ -149,12 +149,14 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
 
     await decompressAndRenameRelease(archivePath, releasesDir, targetFolder)
         .catch(error => {
-            console.error(error);
+            console.error("Aborting due to error:", error);
+            process.exit(-1);
         });
 
     if (config.cleanup_downloaded_archive === true) {
-        console.log(`Cleaning up archive ${archivePath}.`);
+        console.log(`Cleaning up downloaded release archive ${archivePath}.`);
         fs.rmSync(archivePath);
+        console.log(`✓ Cleaning up done.`);
     }
 
     patchPackageJsonBunyan(latestReleaseTag, path.join(targetFolder, 'package.json'));
@@ -166,13 +168,15 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
             .map(dirent => path.join(releasesDir, dirent.name));
         console.warn(`Found ${otherReleaseDirs.length} releases which will be removed.`);
         otherReleaseDirs.forEach(dir => {
-            console.warn(`\t- Deleting ${dir} OctoFarm releases.`);
+            console.warn(`\t- Deleting other OctoFarm release in ${dir}.`);
             fs.rmdirSync(dir, {recursive: true});
         });
     }
 }
 
 (async () => {
+    printOurToiletSaviour();
+
     const config = await getMergedValidatedConfig();
     createFolderIfNotExists(config.release_folder);
 
@@ -181,16 +185,20 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
         ensurePm2Installed();
     }
     const latestRelease = await getLatestReleaseInfo(config);
+    console.log(`✓ Received latest release from github: ${latestRelease.tag_name}`);
     const installedLatestRelease = getCurrentInstalledRelease(config, latestRelease.tag_name);
+    console.log(`✓ Checked for update: ${installedLatestRelease ? "update available" : "already up to date"}.`);
     if (!installedLatestRelease) {
-        console.warn("There is a new release available for OctoFarm - we'll install it now: ", latestRelease.tag_name)
-        await downloadRelease(config, latestRelease);
-    } else {
-        console.warn(`The latest OctoFarm (${latestRelease.tag_name}) is installed, so you're good to go!`);
+        console.log("We'll install this updated version for OctoFarm next: ", latestRelease.tag_name);
+        await downloadAndInstallRelease(config, latestRelease);
     }
+    console.log(`✓ The latest OctoFarm (${latestRelease.tag_name}) is installed, so you're good to go!`);
 
-    console.warn('OctoFarm-Installer has completed. May the toilet roll watch over you.');
-    printOurToiletSaviour();
+    console.log(`✓ OctoFarm-Installer has verified the installation of version ${latestRelease.tag_name};
+    Please consider becoming a Patreon https://www.patreon.com/NotExpectedYet and may the toilet roll watch over you ❤ .
+    Discord? https://discord.gg/vjabMUn
+    Github? https://github.com/OctoFarm/OctoFarm
+    Site? https://octofarm.net/`);
 })().catch(err => {
     console.error("An error occurred whilst running OctoFarm-Installer:\n", err);
 });
