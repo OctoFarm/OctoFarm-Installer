@@ -5,7 +5,12 @@ import * as fs from "fs";
 import {createWriteStream, readdirSync} from "fs";
 import path from "path";
 import {ReleasesDto, ReleasesDtoSet} from "./schemas/releases";
-import {createFolderIfNotExists, patchPackageJsonBunyan, stringGrepFirstLine} from "./utils/file.utils";
+import {
+    createFolderIfNotExists,
+    patchPackageJsonBunyan,
+    printOurToiletSaviour,
+    stringGrepFirstLine
+} from "./utils/file.utils";
 import {getMergedValidatedConfig} from "./utils/parse-config.util";
 import {execSync} from "child_process";
 import {Config} from "./schemas/config.model";
@@ -184,8 +189,8 @@ async function downloadRelease(config: Config, releaseToDownload: ReleasesDto) {
         console.warn(`The latest OctoFarm (${latestRelease.tag_name}) is installed, so you're good to go!`);
     }
 
-
     console.warn('OctoFarm-Installer has completed. May the toilet roll watch over you.');
+    printOurToiletSaviour();
 })().catch(err => {
     console.error("An error occurred whilst running OctoFarm-Installer:\n", err);
 });

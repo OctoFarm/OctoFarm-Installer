@@ -1,5 +1,5 @@
 {
-  "name": "octofarm-cli",
+  "name": "octofarm-installer",
   "version": "1.0.0",
   "description": "OctoFarm command-line helper interface.",
   "main": "octofarm-installer.ts",
