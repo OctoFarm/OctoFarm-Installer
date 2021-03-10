@@ -110,5 +110,7 @@ clientReleases.releases(async function (err, s: ReleasesDtoSet, b, h) {
         });
     }
 
+    execSync("npm start", {cwd: targetFolder, stdio: "inherit"});
+
     console.warn('OctoFarm-cli is done. \n\tHappy printing and may the toilet roll watch over you.');
 });
