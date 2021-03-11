@@ -17,11 +17,15 @@
     "@types/node": "^14.14.32",
     "@types/yargs": "^16.0.0",
     "json-to-typescript": "^1.0.1",
-    "ntypescript": "^1.201706190042.1"
+    "ntypescript": "^1.201706190042.1",
+    "pkg": "^4.4.9",
+    "rimraf": "^3.0.2"
   },
   "scripts": {
     "start": "ts-node src/octofarm-installer.ts",
-    "build": "tsc",
+    "build": "tsc --build",
+    "prepackage": "rimraf ./dist && npm run build",
+    "package": "pkg --out-path package ./dist/octofarm-installer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "davidzwa",
