@@ -91,8 +91,13 @@ function ensurePm2Installed() {
     const pm2CheckResultBuffer = getPm2VersionIfInstalled();
     if (!pm2CheckResultBuffer) {
         console.warn("pm2 was not installed. Running 'npm install -g pm2' for you.");
-        const result = execSync("npm install -g pm2", {encoding: "utf8"});
-        console.warn("Installed pm2 succesfully.", result.trim());
+        let result;
+        try {
+            result = execSync("npm install -g pm2", {encoding: "utf8"});
+        } catch (e) {
+            throw Error("Failed on installing pm2 as a global module, please verify Node is installed or run this installer with sudo if you'd like this to succeed. Command 'npm install -g pm2' failed: " + JSON.stringify(e));
+        }
+        console.warn("Installed pm2 successfully.", result.trim());
     } else {
         console.log("pm2 verified to be already installed: ", pm2CheckResultBuffer.trim());
     }
@@ -183,8 +188,7 @@ async function downloadAndInstallRelease(config: Config, releaseToDownload: Rele
     if (config.skip_pm2_checks === false) {
         // const result = execSync("npm uninstall -g pm2");
         ensurePm2Installed();
-    }
-    else {
+    } else {
         console.log("-- skipped pm2 installation.")
     }
     const latestRelease = await getLatestReleaseInfo(config);
