@@ -2,7 +2,7 @@
   "cleanup_downloaded_archive": true,
   "decompress_overwrite": true,
   "clean_old_versions": true,
-  "skip_pm2_verify": true,
+  "skip_pm2_checks": true,
   "github_org": "octofarm",
   "github_repo": "octofarm",
   "release_folder": "releases"

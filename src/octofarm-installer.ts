@@ -180,9 +180,12 @@ async function downloadAndInstallRelease(config: Config, releaseToDownload: Rele
     const config = await getMergedValidatedConfig();
     createFolderIfNotExists(config.release_folder);
 
-    if (config.skip_pm2_verify === false) {
+    if (config.skip_pm2_checks === false) {
         // const result = execSync("npm uninstall -g pm2");
         ensurePm2Installed();
+    }
+    else {
+        console.log("-- skipped pm2 installation.")
     }
     const latestRelease = await getLatestReleaseInfo(config);
     console.log(`✓ Received latest release from github: ${latestRelease.tag_name}`);

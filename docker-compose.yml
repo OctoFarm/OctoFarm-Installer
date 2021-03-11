@@ -1,0 +1,10 @@
+version: '3.5'
+services:
+  OctoFarm-Installer:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    volumes:
+    - ./dist:/app/dist
+    image: octofarm/octofarm-installer:dev
+    container_name: octofarm-installer
