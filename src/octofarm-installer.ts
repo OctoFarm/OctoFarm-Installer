@@ -24,7 +24,7 @@ export async function downloadFile(fileUrl: string, basePath, releaseTag: string
     const writer = createWriteStream(path.join(basePath, `octofarm-${releaseTag}-download.zip`));
     console.warn('Downloading release from URL', fileUrl);
     const { data, headers } = await axios({
-        timeout: 10000,
+        timeout: 5000,
         url: fileUrl,
         method: 'GET',
         responseType: 'stream'
