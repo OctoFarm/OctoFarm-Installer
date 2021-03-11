@@ -1,6 +1,6 @@
 {
   "name": "octofarm-installer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "OctoFarm command-line helper interface.",
   "main": "src/octofarm-installer.ts",
   "dependencies": {
