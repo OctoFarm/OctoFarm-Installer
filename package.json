@@ -2,7 +2,7 @@
   "name": "octofarm-installer",
   "version": "1.0.0",
   "description": "OctoFarm command-line helper interface.",
-  "main": "octofarm-installer.ts",
+  "main": "src/octofarm-installer.ts",
   "dependencies": {
     "axios": "^0.21.1",
     "class-validator": "^0.13.1",
@@ -16,10 +16,12 @@
   "devDependencies": {
     "@types/node": "^14.14.32",
     "@types/yargs": "^16.0.0",
-    "json-to-typescript": "^1.0.1"
+    "json-to-typescript": "^1.0.1",
+    "ntypescript": "^1.201706190042.1"
   },
   "scripts": {
-    "start": "ts-node octofarm-installer.ts",
+    "start": "ts-node src/octofarm-installer.ts",
+    "build": "ntsc -p src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "davidzwa",

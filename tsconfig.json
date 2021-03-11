@@ -2,6 +2,20 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "experimentalDecorators": true
-  }
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "rootDir": "src",
+    "baseUrl": "tsconfig",
+    "outDir": "dist"
+  },
+  "exclude": [
+    "node_modules",
+    "releases"
+  ]
 }
