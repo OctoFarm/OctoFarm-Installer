@@ -23,33 +23,35 @@ const finished = promisify(stream.finished);
 export async function downloadFile(fileUrl: string, basePath, releaseTag: string): Promise<any> {
     const writer = createWriteStream(path.join(basePath, `octofarm-${releaseTag}-download.zip`));
     console.warn('Downloading release from URL', fileUrl);
-    return axios({
-        method: 'get',
+    const { data, headers } = await axios({
+        timeout: 5000,
         url: fileUrl,
+        method: 'GET',
         responseType: 'stream'
-    }).then(async response => {
-        let contentLength = response.headers['content-length'];
-        let progressBar = null;
-        if (!contentLength) {
-            console.error("content-length was undefined, guessing download size.");
-            contentLength = 17320068;
-        }
+    })
 
-        progressBar = new ProgressBar(`-> Downloading OctoFarm ${releaseTag} [:bar] :percent :etas`, {
-            width: 40,
-            complete: '=',
-            incomplete: ' ',
-            renderThrottle: 1,
-            total: parseInt(contentLength)
-        });
+    let totalLength = headers['content-length'];
+    let progressBar = null;
 
-        response.data.on('data', (chunk) => {
-            progressBar?.tick(chunk.length);
-        });
-        response.data.pipe(writer);
-        await finished(writer);
-        return writer.path;
+    if (!totalLength) {
+        console.error("content-length was undefined, guessing download size.");
+        totalLength = 17320068;
+    }
+
+    progressBar = new ProgressBar(`-> Downloading OctoFarm ${releaseTag} [:bar] :percent :etas`, {
+        width: 40,
+        complete: '=',
+        incomplete: ' ',
+        renderThrottle: 1,
+        total: parseInt(totalLength)
     });
+
+    data.on('data', (chunk) => {
+        progressBar?.tick(chunk.length);
+    });
+    data.pipe(writer);
+    await finished(writer);
+    return writer.path;
 }
 
 function getReleaseFolder(basePath: string, releaseTag: string) {
