@@ -39,7 +39,7 @@ jobs:
           prerelease: endsWith(github.ref, 'prerelease')
 
       - name: Installer Asset - Wind Hose
-        id: upload-release-asset
+        id: upload-release-asset-win
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Installer Asset - Line Uggs
-        id: upload-release-asset
+        id: upload-release-asset-linux
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Installer Asset - Maccaroni Cheese
-        id: upload-release-asset
+        id: upload-release-asset-macos
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
