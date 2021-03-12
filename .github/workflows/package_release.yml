@@ -58,7 +58,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./package/octofarm-installer-linux
-          asset_name: octofarm-installer-${{ steps.get_version.outputs.VERSION }}-linux
+          asset_name: octofarm-installer-${{ steps.get_version.outputs.VERSION }}-linux-node14
           asset_content_type: application/octet-stream
 
       - name: Installer Asset - Maccaroni Cheese
@@ -69,5 +69,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./package/octofarm-installer-macos
-          asset_name: octofarm-installer-${{ steps.get_version.outputs.VERSION }}-macos
+          asset_name: octofarm-installer-${{ steps.get_version.outputs.VERSION }}-macos-node14
           asset_content_type: application/octet-stream
