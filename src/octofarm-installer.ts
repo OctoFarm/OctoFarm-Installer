@@ -4,7 +4,7 @@ import axios from "axios";
 import * as fs from "fs";
 import {createWriteStream, readdirSync} from "fs";
 import path from "path";
-import {ReleasesDto, ReleasesDtoSet} from "./schemas/releases";
+import {ReleasesDto} from "./schemas/releases";
 import {
     createFolderIfNotExists,
     patchPackageJsonBunyan,
@@ -14,7 +14,6 @@ import {
 import {getMergedValidatedConfig} from "./utils/parse-config.util";
 import {execSync} from "child_process";
 import {Config} from "./schemas/config.model";
-import githubApiClient from 'octonode';
 import decompress from 'decompress';
 import ProgressBar from "progress";
 
