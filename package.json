@@ -22,6 +22,7 @@
   },
   "scripts": {
     "start": "ts-node src/octofarm-installer.ts",
+    "schema": "ts-node src/utils/schema.util.ts",
     "build": "tsc --build",
     "prepackage": "rimraf ./dist && npm run build",
     "package": "pkg --out-path package ./dist/octofarm-installer.js",

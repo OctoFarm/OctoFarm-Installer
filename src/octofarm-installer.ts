@@ -16,6 +16,7 @@ import {execSync} from "child_process";
 import {Config} from "./schemas/config.model";
 import decompress from 'decompress';
 import ProgressBar from "progress";
+import {getLatestReleaseInfo, getReleaseDownloadUrl, isAssetUrl} from "./utils/github-release.client";
 
 const finished = promisify(stream.finished);
 
@@ -61,9 +62,12 @@ function checkTargetFolderExists(targetFolder: string): boolean {
     return fs.existsSync(targetFolder);
 }
 
-async function decompressAndRenameRelease(compressedFile: string, basePath: string, targetFolderName) {
+async function decompressRelease(compressedFile: string, basePath: string) {
     console.warn('Safe to continue, decompressing and renaming release...');
-    const fileList = await decompress(compressedFile, basePath);
+    return await decompress(compressedFile, basePath);
+}
+
+async function renameFolder(basePath: string, fileList, targetFolderName) {
     const octoFarmDir = fileList[0];
     if (octoFarmDir.type !== 'directory') {
         throw Error("Expected decompress result to have a folder at index 0. Can't rename OctoFarm folder.");
@@ -104,28 +108,6 @@ function ensurePm2Installed() {
     }
 }
 
-async function getGithubReleases(orgRepoUrlPart) {
-    return await axios({
-        url: `https://api.github.com/repos/${orgRepoUrlPart}/releases`,
-        method: 'GET',
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-        .then((res) => res.data);
-}
-
-async function getLatestReleaseInfo(config: Config): Promise<ReleasesDto> {
-    const repoUrl = config.getGithubRepoUrl();
-    let latestRelease = null;
-
-    return await getGithubReleases(repoUrl)
-        .then(r => {
-            latestRelease = r[0] as ReleasesDto;
-            return latestRelease;
-        });
-}
-
 function getCurrentInstalledRelease(config: Config, release_tag_name): boolean {
     const releaseFolder = getReleaseFolder(config.release_folder, release_tag_name);
     if (!fs.existsSync(releaseFolder)) {
@@ -142,12 +124,13 @@ function getCurrentInstalledRelease(config: Config, release_tag_name): boolean {
 }
 
 async function downloadAndInstallRelease(config: Config, releaseToDownload: ReleasesDto) {
-    const latestReleaseTarUrl = releaseToDownload.tarball_url;
+    const latestReleaseURL = getReleaseDownloadUrl(releaseToDownload);
     const latestReleaseTag = releaseToDownload.tag_name;
     const releasesDir = config.release_folder;
 
-    const archivePath = await downloadFile(latestReleaseTarUrl, releasesDir, latestReleaseTag);
-    const targetFolder = getReleaseFolder(releasesDir, latestReleaseTag);
+    const archivePath = await downloadFile(latestReleaseURL, releasesDir, latestReleaseTag);
+
+    let targetFolder = getReleaseFolder(releasesDir, latestReleaseTag);
     if (checkTargetFolderExists(targetFolder)) {
         if (config.decompress_overwrite === true) {
             fs.rmdirSync(targetFolder, {recursive: true});
@@ -156,11 +139,23 @@ async function downloadAndInstallRelease(config: Config, releaseToDownload: Rele
         }
     }
 
-    await decompressAndRenameRelease(archivePath, releasesDir, targetFolder)
+    const isAssetDownload = isAssetUrl(latestReleaseURL);
+    let extractionPath;
+    if (isAssetDownload) {
+        extractionPath = getReleaseFolder(releasesDir, latestReleaseTag);
+    } else {
+        extractionPath = releasesDir;
+    }
+    const fileList = await decompressRelease(archivePath, extractionPath)
         .catch(error => {
-            console.error("Aborting due to error:", error);
+            console.error("Aborting due to decompress/rename error:", error);
             process.exit(-1);
         });
+
+    if (!isAssetDownload) {
+        // Release source code is nested 1 deep, incorrectly named and requires rename in order to be compatible/useful
+        await renameFolder(extractionPath, fileList, getReleaseFolder(releasesDir, latestReleaseTag));
+    }
 
     if (config.cleanup_downloaded_archive === true) {
         console.log(`Cleaning up downloaded release archive ${archivePath}.`);
@@ -190,7 +185,6 @@ async function downloadAndInstallRelease(config: Config, releaseToDownload: Rele
     createFolderIfNotExists(config.release_folder);
 
     if (config.skip_pm2_checks === false) {
-        // const result = execSync("npm uninstall -g pm2");
         ensurePm2Installed();
     } else {
         console.log("-- skipped pm2 installation.")

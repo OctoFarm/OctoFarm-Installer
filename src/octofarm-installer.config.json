@@ -3,6 +3,7 @@
   "decompress_overwrite": true,
   "clean_old_versions": true,
   "skip_pm2_checks": true,
+  "prereleases_allowed": true,
   "github_org": "octofarm",
   "github_repo": "octofarm",
   "release_folder": "releases"
