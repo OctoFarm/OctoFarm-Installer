@@ -27,16 +27,16 @@ jobs:
       - run: npm ci
       - run: npm run package
 
-      - name: Create Release
+      - name: Create prerelease
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Prerelease ${{ github.ref }}
           draft: false
-          prerelease: endsWith(github.ref, 'prerelease')
+          prerelease: true
 
       - name: Installer Asset - Wind Hose
         id: upload-release-asset-win
