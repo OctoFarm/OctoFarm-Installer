@@ -2,7 +2,7 @@ import {createFolderIfNotExists} from "./file.utils";
 import path from "path";
 import {transform} from "json-to-typescript/index";
 import fs from "fs";
-var github = require('octonode');
+import {getGithubReleases} from "./github-release.client";
 
 export function generateSchema(jsonBody: any, tsName: string, interfaceName: string, outputFolder: string) {
     const schemaDtoFile = path.join(outputFolder, tsName);
@@ -14,13 +14,13 @@ export function generateSchema(jsonBody: any, tsName: string, interfaceName: str
 
 export function updateReleasesSchema(repoUrl, schemaFolder) {
     createFolderIfNotExists(schemaFolder);
-    const clientReleases = github.client().repo(repoUrl);
-    clientReleases.releases(function (err, s, b, h) {
-        generateSchema(s, 'releases.d.ts', 'ReleasesDto', schemaFolder);
-    });
+    const clientReleases = getGithubReleases('octofarm/octofarm', true)
+        .then(r => {
+            generateSchema(r, 'releases.d.ts', 'ReleasesDto', schemaFolder);
+        });
 }
 
 var githubOrg = 'octofarm';
 var productRepo = 'octofarm';
-const outputdir = './schemas';
+const outputdir = __dirname + '/../schemas';
 updateReleasesSchema(`${githubOrg}/${productRepo}`, outputdir);
